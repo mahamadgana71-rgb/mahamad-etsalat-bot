@@ -1,0 +1,76 @@
+import logging
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
+
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+
+# ⚠️ ضع التوكن الخاص بك هنا بين علامتي التنصيص
+TOKEN = "9056390846:AAGGCI-IEnE4AIyNgaXN3-0MWyF7nY1fhqg
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    keyboard = [
+        [
+            InlineKeyboardButton("💰 الاستعلام عن الرصيد", callback_data="balance"),
+            InlineKeyboardButton("📞 معرفة رقم الخط", callback_data="my_number")
+        ],
+        [
+            InlineKeyboardButton("🌐 باقات الإنترنت", callback_data="internet"),
+            InlineKeyboardButton("💬 باقات حكاية", callback_data="hekaya")
+        ],
+        [
+            InlineKeyboardButton("💳 شحن كارت", callback_data="recharge"),
+            InlineKeyboardButton("💸 اتصالات كاش", callback_data="cash")
+        ],
+        [
+            InlineKeyboardButton("🧑‍💻 خدمة العملاء", callback_data="support")
+        ]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    welcome_text = "👋 أهلاً بك في بوت أوامر اتصالات مصر!\n\nاضغط على أي زر بالأسفل للحصول على كود الخدمة."
+    
+    if update.message:
+        await update.message.reply_text(welcome_text, reply_markup=reply_markup)
+    elif update.callback_query:
+        await update.callback_query.message.edit_text(welcome_text, reply_markup=reply_markup)
+
+async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    await query.answer()
+    data = query.data
+    response_text = ""
+    
+    if data == "balance":
+        response_text = "💰 **كود الاستعلام عن الرصيد:**\n\n`*555#`"
+    elif data == "my_number":
+        response_text = "📞 **كود معرفة رقم خطك:**\n\n`*947#`"
+    elif data == "internet":
+        response_text = "🌐 **أكواد وإدارة باقات الإنترنت:**\n\n`*566#`"
+    elif data == "hekaya":
+        response_text = "💬 **أكواد نظام وباقات حكاية مكالمات:**\n\n`*319#`"
+    elif data == "recharge":
+        response_text = "💳 **كود شحن كارت اتصالات:**\n\n`*556*الرقم_السري#`"
+    elif data == "cash":
+        response_text = "💸 **كود خدمات اتصالات كاش:**\n\n`*777#`"
+    elif data == "support":
+        response_text = "🧑‍💻 **للتحدث مع خدمة عملاء اتصالات مصر:**\n\nاتصل بالرقم: `333` من أي خط اتصالات."
+        
+    back_keyboard = [[InlineKeyboardButton("🔙 العودة للقائمة الرئيسية", callback_data="main_menu")]]
+    reply_markup = InlineKeyboardMarkup(back_keyboard)
+    
+    if data == "main_menu":
+        await start(update, context)
+    else:
+        await query.message.edit_text(response_text, parse_mode="Markdown", reply_markup=reply_markup)
+
+def main() -> None:
+    application = Application.builder().token(TOKEN).build()
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CallbackQueryHandler(button_click))
+    print("🤖 البوت يعمل الآن بنجاح...")
+    application.run_polling()
+
+if __name__ == '__main__':
+    main()
